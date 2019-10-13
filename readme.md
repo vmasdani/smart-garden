@@ -22,7 +22,7 @@ curl https://sh.rustup.rs -sSf | sh
 ```
 - Clone this repo and compile the code
 ```sh 
-git clone https://github.com/vmasdani/smart-garden.git\
-cd smart-garden\
+git clone https://github.com/vmasdani/smart-garden.git &&\
+cd smart-garden &&\
 cargo build
 ```
