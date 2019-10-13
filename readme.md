@@ -28,5 +28,5 @@ cargo build
 ```
 - Move `db` and `www` directory to `target/debug/`
 ```sh
-cp db www target/debug
+cp -r db/ www/ target/debug
 ```
