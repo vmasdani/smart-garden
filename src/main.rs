@@ -9,12 +9,15 @@
 extern crate chrono;
 extern crate qrcode;
 extern crate rusqlite;
+#[macro_use]
+extern crate include_dir;
 
 use actix_web::{web, App, HttpResponse, HttpServer};
 use actix_files::NamedFile;
 use actix_files as fs;
 use serde::Deserialize;
 use serde::Serialize;
+use include_dir::Dir;
 use std::thread;
 use std::process::Command;
 use std::error::Error;
@@ -22,6 +25,8 @@ use std::time::Duration;
 use chrono::prelude::*;
 use rusqlite::{Connection, NO_PARAMS};
 use qrcode::QrCode;
+
+const WWW_DIR: Dir = include_dir!("www");
 
 #[derive(Debug, Deserialize)]
 struct Schedule {

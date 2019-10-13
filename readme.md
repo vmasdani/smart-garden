@@ -26,3 +26,7 @@ git clone https://github.com/vmasdani/smart-garden.git &&\
 cd smart-garden &&\
 cargo build
 ```
+- Move `db` and `www` directory to `target/debug/`
+```sh
+cp db www target/debug
+```
