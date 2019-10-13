@@ -12,6 +12,9 @@ Steps to get this running:
 - Install [Armbian Bionic](https://www.armbian.com/orange-pi-zero/) for Orange Pi Zero with [Etcher](https://www.balena.io/etcher/)
 - Log into Orange Pi Zero with USB to TTL converter such as CH340 or CP2102, or through router
 - Configure Wi-Fi with `nmtui`
+```sh
+nmtui
+```
 - Install curl
 ```sh
 sudo apt install curl
