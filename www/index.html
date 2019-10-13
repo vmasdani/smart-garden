@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hello Bulma!</title>
+    <link rel="stylesheet" href="/css/bulma.min.css">
+    <script defer src="/js/all.js"></script>
+  </head>
+  <body>    
+    <div class="columns is-mobile is-centered">
+        <div class="column is-narrow" style="margin:10px">
+          <h1 class="is-size-3">Smart Garden C5/14</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="columns is-mobile is-centered">
+      <div id="url" class="column is-narrow is-size-4 has-text-weight-semibold"></div>
+    </div>
+
+    <div class="columns is-mobile is-centered">
+      <div class="column is-narrow is-size-4 has-text-weight-semibold">Schedules</div>
+    </div>
+
+    <div class="columns is-mobile is-centered">
+      <div class="column is-narrow list" id="schedules"></div>
+    </div>
+
+    <div class="columns is-mobile is-centered">
+      <div class="column is-narrow">
+        <div class="field-body">
+          <div class="field-label is-normal">Hour:</div>
+          <div class="field">
+            <input id="add-schedule-hour" class="input" type="number" placeholder="Hour" style=""/>
+          </div>
+          <div class="field-label is-normal">Minute:</div>
+          <div class="field">
+            <input id="add-schedule-minute" class="input" type="number" placeholder="Minute" />
+          </div>
+          <div>
+            <a onClick="addSchedule()" class="button is-info"><span class="icon"><i class="fas fa-plus"></i></span></a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="columns is-mobile is-centered">
+      <div class="column is-narrow is-size-4 has-text-weight-semibold">Watering Time</div>
+    </div>
+
+    <div class="columns is-mobile is-centered">
+      <div class="column is-narrow">
+        <div class="field-body">
+          <div class="field-label is-normal">Minute(s):</div>
+          <div class="field">
+            <input id="watering-minute" class="input" type="number" placeholder="Minute" style=""/>
+          </div>
+          <div class="field-label is-normal">Second(s):</div>
+          <div class="field">
+            <input id="watering-second" class="input" type="number" placeholder="Second" />
+          </div>
+          <div>
+            <a onClick="updateWateringTime()" class="button is-primary"><span class="icon"><i class="fas fa-edit"></i></span></a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="columns is-mobile is-centered">
+      <div class="column is-narrow is-size-4 has-text-weight-semibold">Power Off</div>
+    </div>
+
+    <div class="columns is-mobile is-centered">
+      <div class="column is-narrow">
+        <a onClick="powerOff()" class="button is-danger">
+          <span class="icon"><i class="fas fa-power-off"></i></span>
+        </a>
+      </div>
+    </div>
+
+  </body>
+  <script>
+    const baseUrl = window.location.href;
+
+    // Get schedules
+    fetch(`${baseUrl}schedule`)
+      .then(response => {
+        return response.json();
+      })
+      .then(data => {
+        console.log(data);
+
+        let schedulesList = "";
+
+        for(let schedule of data) {
+          const schedHour = schedule.hour.toString().length > 1 ? schedule.hour : `0${schedule.hour}`;
+          const schedMins = schedule.minute.toString().length > 1 ? schedule.minute : `0${schedule.minute}`;
+
+          schedulesList = schedulesList + `<div class="list-item" style="display:flex; align-items:center; margin:15px">`
+          + `<div class="is-size-5">${schedHour}.${schedMins}</div>`
+          + `<a onClick="deleteSchedule(${schedule.id}, ${schedule.hour}, ${schedule.minute})" class="button is-danger" style="margin-left:15px"><span class="icon"><i class="fas fa-trash"></i></span></a>`
+          + `</div>`;
+        }
+
+        document.getElementById("schedules").innerHTML = schedulesList;
+      });
+
+      // Get watering time 
+      fetch(`${baseUrl}watering-time`)
+        .then(response => {
+          return response.json();
+        })
+        .then(data => {
+          console.log("Watering time:", data);
+          document.getElementById("watering-minute").value = data.minute;
+          document.getElementById("watering-second").value = data.second;
+        });
+      
+      function deleteSchedule(id, hour, minute) {
+        console.log("id chosen:", id);
+      
+        let confirmed = confirm(`Delete schedule: ${hour}.${minute}, are you sure?`);
+
+        if(confirmed) {
+          console.log("Deleting...");
+
+          fetch(`${baseUrl}schedule/${id}`, {
+            method: 'DELETE'
+          })
+            .then(response => {
+              if(response.status == 200) {
+                alert("Success deleting!");
+                location.reload();
+              }
+            })
+            .catch(error => {
+              alert("Error deleting!", error);
+              console.log(error);
+            });
+        }
+      }
+
+      function addSchedule() {
+        console.log("Add function");
+        const scheduleHour = document.getElementById("add-schedule-hour").value;
+        const scheduleMins = document.getElementById("add-schedule-minute").value;
+
+        if(scheduleHour === "" || scheduleMins === "") {
+          alert("Hour and minute cannot be empty!");
+        }
+        else if(Number(scheduleHour) < 0 || Number(scheduleMins) < 0 || Number(scheduleHour) > 23 || Number(scheduleMins) > 59) {
+          alert("Time must be valid!");
+        }
+        else {
+          let confirmed = confirm(`Add schedule ${scheduleHour}.${scheduleMins}?`)
+          
+          if(confirmed) {
+            console.log("Adding...");
+          
+            fetch(`${baseUrl}schedule`, {
+              method: "POST",
+              headers: {
+                "Content-Type" : "application/json"
+              },
+              body: JSON.stringify({
+                id: 0,
+                hour: Number(scheduleHour),
+                minute: Number(scheduleMins)
+              })
+            })
+              .then(response => {
+                console.log(response);
+                if(response.status == 200) {
+                  alert("Success adding!");
+                  location.reload();
+                }
+              })
+              .catch(error => {
+                alert("Error adding!");
+                console.log("Error!", error.response);
+              })
+          }
+        }
+      }
+
+      function updateWateringTime() {
+        console.log("Update function");
+        const wateringMins = document.getElementById("watering-minute").value;
+        const wateringSecs = document.getElementById("watering-second").value;
+
+        let confirmed = confirm(`Update watering time to ${wateringMins}:${wateringSecs}?`);
+      
+        if(confirmed) {
+          console.log("Updating...");
+        
+          fetch(`${baseUrl}watering-time`, {
+            method: "PUT",
+            headers: {
+              "Content-Type" : "application/json"
+            },
+            body: JSON.stringify({
+              id: 1,
+              minute: Number(wateringMins),
+              second: Number(wateringSecs)
+            })
+          })
+            .then(response => {
+              if(response.status == 200) {
+                alert("Update success!");
+                location.reload();
+              }
+            })
+            .catch(error => {
+              console.log("Error updating!", error);
+              alert("Error updating!");
+            })
+        }
+      }
+
+      function powerOff() {
+        let confirmed = confirm("Are you sure you want to power off?");
+      
+        if(confirmed) {
+          fetch(`${baseUrl}poweroff`, {
+            method: "POST"
+          });
+          alert("Powering off device..");
+        }
+      }
+  </script>
+</html>
