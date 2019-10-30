@@ -67,7 +67,7 @@ fn main() -> Result<(), Box <dyn Error>> {
         "
         ) { println!("{}", e) }
 
-        connection.execute("insert into schedule(hour, minute) values(1, 5)");
+        // connection.execute("insert into schedule(hour, minute) values(1, 5)");
 
         // Check if watering_time exists
         let mut wt_exist_stmt = connection.prepare("select * from watering_time where id=1").unwrap();
@@ -203,8 +203,10 @@ fn main() -> Result<(), Box <dyn Error>> {
                     println!("Control data: {}", control_type);
                 },
                 "power" => {
-                    println!("Power topic detected!")
-                    // TODO: Make a system call to the command poweroff, shutting down machine
+                    println!("Power topic detected!");
+                    Command::new("poweroff")
+                        .output()
+                        .expect("Failed to power off device!");
                 },
                 _ => println!("Topic irrelevant.")
             }
@@ -215,8 +217,63 @@ fn main() -> Result<(), Box <dyn Error>> {
         m.loop_until_disconnect(200);
     });
 
-    /*
+    
     // Database poller thread
+    thread::spawn(|| {
+        let mut last_detected_time: DateTime<Local> = Local::now();
+        
+        loop {
+            let current_time = Local::now();
+ 
+            let last_hour = &last_detected_time.hour();
+            let last_minute = &last_detected_time.minute();
+            let cur_hour = &current_time.hour();
+            let cur_minute = &current_time.minute();
+
+            
+
+            println!("Last: {}.{}, Current:{}.{}", last_hour, last_minute, cur_hour, cur_minute);
+            
+            if(last_hour == cur_hour && last_minute == cur_minute) {
+                
+                
+                println!("Time is still the same!");
+            }
+            else {
+                last_detected_time = current_time;
+                println!("Time has changed!");
+            
+                let connection = sqlite::open("./data.db").unwrap();
+                let mut schedule_stmt = connection.prepare(format!("select * from schedule where hour={} and minute={}", cur_hour, cur_minute)).unwrap();
+
+                let mut schedule_counter = 0;
+                
+                while let State::Row = schedule_stmt.next().unwrap() {
+                    let hour = schedule_stmt.read::<i64>(1).unwrap();
+                    let minute = schedule_stmt.read::<i64>(2).unwrap();
+                    
+                    println!("Found match! {}:{}", hour, minute);
+                    schedule_counter += 1;
+                }
+                
+                if(schedule_counter != 0) {
+                    println!("Match detected! Watering start...");
+
+                    let mut counter = 10;
+                    
+                    while(counter > 0) {
+                        println!("{}...", counter);
+                        counter -= 1;
+                        thread::sleep(Duration::from_secs(1));       
+                    }
+                    println!("All done!");
+                }
+            }
+
+            thread::sleep(Duration::from_secs(10));
+        }
+    });
+    /*
     thread::spawn(move || {
         let mut last_detected_time: DateTime<Local> = Local::now();
         let conn_poller = Connection::open("./db/data.db3").unwrap();
