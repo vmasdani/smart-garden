@@ -33,3 +33,7 @@ git clone https://github.com/vmasdani/smart-garden.git &&\
 cd smart-garden &&\
 cargo build
 ```
+8. Enable `/dev/i2c-1` through `armbian-config`
+```sh
+sudo armbian-config
+```
