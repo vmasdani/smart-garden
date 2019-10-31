@@ -22,19 +22,19 @@ use chrono::prelude::*;
 use sqlite::State;
 use qrcode::QrCode;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 struct ScheduleArray {
     data: Vec<Schedule>
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 struct Schedule {
     id: i64,
     hour: i64,
     minute: i64,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 struct WateringTime {
     minute: i64,
     second: i64
