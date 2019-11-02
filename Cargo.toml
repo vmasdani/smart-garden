@@ -1,5 +1,5 @@
 [package]
-name = "actix"
+name = "smart_garden"
 version = "0.1.0"
 authors = ["vmasdani <valianmasdani@gmail.com>"]
 edition = "2018"
