@@ -5,7 +5,7 @@ name = "actix"
 version = "0.1.0"
 dependencies = [
  "chrono 0.4.9 (registry+https://github.com/rust-lang/crates.io-index)",
- "embedded-graphics 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "embedded-graphics 0.4.9 (registry+https://github.com/rust-lang/crates.io-index)",
  "linux-embedded-hal 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "machine-ip 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "mosquitto-client 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -14,6 +14,7 @@ dependencies = [
  "serde_json 1.0.41 (registry+https://github.com/rust-lang/crates.io-index)",
  "sqlite 0.25.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "ssd1306 0.2.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wiringpi 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -82,11 +83,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "embedded-graphics"
-version = "0.5.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
 name = "embedded-hal"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -94,6 +90,11 @@ dependencies = [
  "nb 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "void 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
+
+[[package]]
+name = "glob"
+version = "0.2.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "i2cdev"
@@ -403,6 +404,16 @@ name = "winapi-x86_64-pc-windows-gnu"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
+[[package]]
+name = "wiringpi"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "cc 1.0.45 (registry+https://github.com/rust-lang/crates.io-index)",
+ "glob 0.2.11 (registry+https://github.com/rust-lang/crates.io-index)",
+ "libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
 [metadata]
 "checksum autocfg 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)" = "b671c8fb71b457dd4ae18c4ba1e59aa81793daacc361d82fcd410cef0d491875"
 "checksum bitflags 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "32866f4d103c4e438b1db1158aa1b1a80ee078e5d77a59a2f906fd62a577389c"
@@ -415,8 +426,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum checked_int_cast 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "17cc5e6b5ab06331c33589842070416baa137e8b0eb912b008cfd4a78ada7919"
 "checksum chrono 0.4.9 (registry+https://github.com/rust-lang/crates.io-index)" = "e8493056968583b0193c1bb04d6f7684586f3726992d6c573261941a895dbd68"
 "checksum embedded-graphics 0.4.9 (registry+https://github.com/rust-lang/crates.io-index)" = "b2e7ee289ac88cbeea6f749cd72c6eb4cdeb801f4ea26795aace97b9776a2db2"
-"checksum embedded-graphics 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)" = "704679bfcb66cc748ec185ae62ccd5b03311a53793372e2abf1ff9a7e9875ff7"
 "checksum embedded-hal 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "ee4908a155094da7723c2d60d617b820061e3b4efcc3d9e293d206a5a76c170b"
+"checksum glob 0.2.11 (registry+https://github.com/rust-lang/crates.io-index)" = "8be18de09a56b60ed0edf84bc9df007e30040691af7acd1c41874faac5895bfb"
 "checksum i2cdev 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)" = "db7cf03500911132bacb44430234aa58dba843bb6aa2820154e5abb696e3e3d9"
 "checksum itoa 0.4.4 (registry+https://github.com/rust-lang/crates.io-index)" = "501266b7edd0174f8530248f87f99c88fbe60ca4ef3dd486835b8d8d53136f7f"
 "checksum libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)" = "34fcd2c08d2f832f376f4173a231990fa5aef4e99fb569867318a227ef4c06ba"
@@ -457,3 +468,4 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum winapi 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)" = "8093091eeb260906a183e6ae1abdba2ef5ef2257a21801128899c3fc699229c6"
 "checksum winapi-i686-pc-windows-gnu 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "ac3b87c63620426dd9b991e5ce0329eff545bccbbb34f3be09ff6fb6ab51b7b6"
 "checksum winapi-x86_64-pc-windows-gnu 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
+"checksum wiringpi 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)" = "e3e065de8885b0ae1e1928eb3bf905c7d0a0a28ceab823852e9ffe123a126f3d"

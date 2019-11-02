@@ -1,17 +1,20 @@
-// TODO: add gpio control in fn control()
-// add QR code
-// add database checking thread
-// TODO: Move to Orange Pi and add linux_embedded_hal functionalities
-// Add default watering time
-// Add update watering_time and delete schedule
-// TODO: update index.html. Add timepicker and alert response if button is pushed.
-
 extern crate chrono;
 extern crate qrcode;
 extern crate mosquitto_client as mosq;
 extern crate serde;
 extern crate serde_json;
+extern crate linux_embedded_hal as hal;
+extern crate embedded_graphics;
+extern crate ssd1306;
+extern crate machine_ip;
+extern crate wiringpi;
 
+use hal::I2cdev;
+use embedded_graphics::prelude::*;
+use embedded_graphics::primitives::{Rect, Line};
+use embedded_graphics::pixelcolor::PixelColorU8;
+use embedded_graphics::fonts::Font12x16;
+use ssd1306::{prelude::*, mode::GraphicsMode, Builder};
 use mosq::Mosquitto;
 use serde::{Serialize, Deserialize};
 use std::thread;
@@ -21,6 +24,7 @@ use std::time::Duration;
 use chrono::prelude::*;
 use sqlite::State;
 use qrcode::QrCode;
+use wiringpi::pin::Value::{High, Low};
 
 #[derive(Serialize, Deserialize, Debug)]
 struct ScheduleArray {
@@ -41,8 +45,13 @@ struct WateringTime {
 }
 
 fn main() -> Result<(), Box <dyn Error>> {
-    // Starting database
+    // Database and digital pin normalization
     thread::spawn(|| {
+        let pi = wiringpi::setup();
+        let pin = pi.output_pin(6);
+
+        pin.digital_write(Low);
+
         let connection = sqlite::open("./data.db").unwrap();
     
         // create schedule table
@@ -100,7 +109,6 @@ fn main() -> Result<(), Box <dyn Error>> {
         let schedule = m.subscribe("schedule/#", 0).expect("Cannot subscribe to schedule!");
         let watering = m.subscribe("watering/#", 0).expect("Cannot subscribe to watering!");
         let power = m.subscribe("power", 0).expect("Cannot subscribe to power!");
-        
 
         let mut mc = m.callbacks(());
         mc.on_message(|_,msg| {
@@ -201,6 +209,18 @@ fn main() -> Result<(), Box <dyn Error>> {
                     let control_type = &data_json["control_type"];
 
                     println!("Control data: {}", control_type);
+
+                    let pi = wiringpi::setup();
+                    let pin = pi.output_pin(6);
+
+                    if control_type == 1 {
+                        println!("Turning on valve!");
+                        pin.digital_write(High);
+                    }
+                    else if control_type == 0 {
+                        println!("Turning off valve!");
+                        pin.digital_write(Low);
+                    }
                 },
                 "power" => {
                     println!("Power topic detected!");
@@ -259,13 +279,32 @@ fn main() -> Result<(), Box <dyn Error>> {
                 if(schedule_counter != 0) {
                     println!("Match detected! Watering start...");
 
-                    let mut counter = 10;
+                    let mut counter = 0;
+                    let mut watering_stmt = connection.prepare("select * from watering_time where id=1").unwrap();
+                    
+                    while let State::Row = schedule_stmt.next().unwrap() {
+                        let minute = schedule_stmt.read::<i64>(1).unwrap();
+                        let second = schedule_stmt.read::<i64>(2).unwrap();
+
+                        let total_secs = minute * 60 + second;
+
+                        println!("Watering for {} minute and {} seconds, totalling {} seconds.", minute, second, total_secs);
+                        counter = total_secs;
+                    }
+
+                    let pi = wiringpi::setup();
+                    let pin = pi.output_pin(6);
+
+                    pin.digital_write(High);
                     
                     while(counter > 0) {
                         println!("{}...", counter);
                         counter -= 1;
                         thread::sleep(Duration::from_secs(1));       
                     }
+                    
+                    pin.digital_write(Low);
+
                     println!("All done!");
                 }
             }
@@ -313,22 +352,63 @@ fn main() -> Result<(), Box <dyn Error>> {
 
     // IP checker thread
     thread::spawn(|| {
+        
+
         println!("IP poller thread started!");
+
+        let i2c = I2cdev::new("/dev/i2c-1").unwrap();
+
+        let mut disp: GraphicsMode<_> = Builder::new().connect_i2c(i2c).into();
+
+        disp.init().unwrap();
+        disp.clear();
+
+        disp.draw(Rect::new(Coord::new(35, 0), Coord::new(87, 52)).with_stroke(Some(PixelColorU8(1u8))).into_iter());
+
+        // disp.flush().unwrap();
+
         loop {
             if let Some(ip) = machine_ip::get() {
-                let detected_ip = ip.to_string();
+                let detected_ip = format!("http://{}", ip.to_string());
+                // let detected_ip = String::from("http://192.168.1.1");
                 println!("IP detected: {}", detected_ip);
 
                 let code = QrCode::new(detected_ip).unwrap();
+                
                 let ip_qr = code.render::<char>()
                     .quiet_zone(false)
-                    .module_dimensions(2, 1)
+                    .module_dimensions(2, 2)
                     .build();
 
-                println!("{}", ip_qr);
+                let mut y_point = 1;
+                let mut x_point = 36;    
+
+                for i in ip_qr.chars() {
+                    if(i == '\n') {
+                        x_point = 36;
+                        y_point += 1;
+                    }
+
+                    if(i == ' ') {
+                        // print!("{}", " ");
+                        disp.set_pixel(x_point, y_point, 1);
+                    }
+                    else {
+                        // print!("{}", i);
+                    }
+                    x_point += 1;
+                    
+                }
+                disp.flush().unwrap();
+
+                // println!("{}", ip_qr);
             }
             else {
                 println!("IP not found!");
+                disp.draw(
+                    Font12x16::render_str(&format!("{}", "NO IP!".to_string()))
+                    .into_iter()
+                );
             }
             thread::sleep(Duration::from_secs(60));
         }
