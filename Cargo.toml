@@ -21,3 +21,6 @@ sqlite = "0.25.0"
 [dependencies.wiringpi]
 version="0.2"
 features = ["orangepi"]
+
+[profile.release]
+codegen-units=1

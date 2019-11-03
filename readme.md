@@ -41,8 +41,8 @@ cargo build --release
 ```sh
 armbian-config
 ```
-10. Copy the contents of the `www` folder to `/usr/share/nginx/html`
+10. Copy the contents of the `www` folder to `/var/www/html`
 ```sh
-sudo cp www/* /usr/share/nginx/html
+sudo cp www/* /var/www/html
 ```
 11. Add systemd to `target/debug` directory: TODO 

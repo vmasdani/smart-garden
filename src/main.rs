@@ -45,58 +45,67 @@ struct WateringTime {
 }
 
 fn main() -> Result<(), Box <dyn Error>> {
-    // Database and digital pin normalization
-    thread::spawn(|| {
-        let pi = wiringpi::setup();
-        let pin = pi.output_pin(6);
+    // Create database file if not exists
+    if let Ok(_) = sqlite::open("./data.db") {
+        println!("Database opening OK!");
+    }
+    else {
+        println!("Database doesn't exist! Creating..");
+        Command::new("echo > data.db")
+            .output()
+            .expect("Creating data.db failed!");
+    }
 
-        pin.digital_write(Low);
+    // Database and digital pin normalization 
+    let pi = wiringpi::setup();
+    let pin = pi.output_pin(6);
 
-        let connection = sqlite::open("./data.db").unwrap();
+    pin.digital_write(Low);
+
+    let connection = sqlite::open("./data.db").unwrap();
     
-        // create schedule table
-        if let Err(e) = connection.execute(
-        "
-            create table schedule(
-                id integer primary key autoincrement,
-                hour tinyint,
-                minute tinyint
-            );                   
-        "
-        ) { println!("{}", e) }
+    // create schedule table
+    if let Err(e) = connection.execute(
+    "
+        create table schedule(
+            id integer primary key autoincrement,
+            hour tinyint,
+            minute tinyint
+        );                   
+    "
+    ) { println!("{}", e) }
 
-        // create watering_time table
-        if let Err(e) = connection.execute(
-        "
-            create table watering_time(
-                id integer primary key autoincrement,
-                minute tinyint,
-                second tinyint
-            );                   
-        "
-        ) { println!("{}", e) }
+    // create watering_time table
+    if let Err(e) = connection.execute(
+    "
+        create table watering_time(
+            id integer primary key autoincrement,
+            minute tinyint,
+            second tinyint
+        );                   
+    "
+    ) { println!("{}", e) }
 
-        // connection.execute("insert into schedule(hour, minute) values(1, 5)");
+    // connection.execute("insert into schedule(hour, minute) values(1, 5)");
 
-        // Check if watering_time exists
-        let mut wt_exist_stmt = connection.prepare("select * from watering_time where id=1").unwrap();
+    // Check if watering_time exists
+    let mut wt_exist_stmt = connection.prepare("select * from watering_time where id=1").unwrap();
 
-        let mut wt_time_counter = 0;
-        while let State::Row = wt_exist_stmt.next().unwrap() {
-            wt_time_counter += 1;
-            println!("minute: {}, second: {}", wt_exist_stmt.read::<i64>(1).unwrap(), wt_exist_stmt.read::<i64>(2).unwrap());
-        }
+    let mut wt_time_counter = 0;
+    while let State::Row = wt_exist_stmt.next().unwrap() {
+        wt_time_counter += 1;
+        println!("minute: {}, second: {}", wt_exist_stmt.read::<i64>(1).unwrap(), wt_exist_stmt.read::<i64>(2).unwrap());
+    }
 
-        println!("Num of watering_time = {}", wt_time_counter);
-        if wt_time_counter == 0 {
-            println!("Watering time is empty! Inserting....");
-            connection.execute("insert into watering_time(id, minute, second) values(1, 0, 10)");
-        }
-        else {
-            println!("Watering time is not empty!");
-        }
-    });
-    
+    println!("Num of watering_time = {}", wt_time_counter);
+    if wt_time_counter == 0 {
+        println!("Watering time is empty! Inserting....");
+        connection.execute("insert into watering_time(id, minute, second) values(1, 0, 10)");
+    }
+    else {
+        println!("Watering time is not empty!");
+    }
+
 
     // MQTT Listener thread
     thread::spawn(|| {
@@ -312,48 +321,9 @@ fn main() -> Result<(), Box <dyn Error>> {
             thread::sleep(Duration::from_secs(10));
         }
     });
-    /*
-    thread::spawn(move || {
-        let mut last_detected_time: DateTime<Local> = Local::now();
-        let conn_poller = Connection::open("./db/data.db3").unwrap();
-            
-        loop {
-            let current_time = Local::now();
-
-            let last_hour = &last_detected_time.hour();
-            let last_minute = &last_detected_time.minute();
-            let cur_hour = &current_time.hour();
-            let cur_minute = &current_time.minute();
-
-            if last_hour == cur_hour && last_minute == cur_minute {
-                println!("Time is still the same! {}:{} vs {}:{}", last_hour, last_minute, cur_hour, cur_minute);
-            }
-            else {
-                last_detected_time = current_time.clone();
-                println!("Time has changed! {}:{} vs {}:{}", last_hour, last_minute, cur_hour, cur_minute);
-            
-                // Poll database
-                let mut stmt = conn_poller.prepare("select * from schedule where hour=?1 and minute=?2").unwrap();
-                
-                let schedule_iter = stmt.query_map(&[&cur_hour, &cur_minute], |row| Ok(Schedule {
-                    id: row.get(0).unwrap(),
-                    hour: row.get(1).unwrap(),
-                    minute: row.get(2).unwrap()
-                })).unwrap();
-
-                let count = &schedule_iter.count();
-                println!("Match: {}", count);
-            }
-            
-            thread::sleep(Duration::from_secs(10));
-        }
-    });
-    */
-
+    
     // IP checker thread
     thread::spawn(|| {
-        
-
         println!("IP poller thread started!");
 
         let i2c = I2cdev::new("/dev/i2c-1").unwrap();
@@ -418,6 +388,5 @@ fn main() -> Result<(), Box <dyn Error>> {
     loop {
     
     }
-
     Ok(())
 }
