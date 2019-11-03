@@ -291,9 +291,9 @@ fn main() -> Result<(), Box <dyn Error>> {
                     let mut counter = 0;
                     let mut watering_stmt = connection.prepare("select * from watering_time where id=1").unwrap();
                     
-                    while let State::Row = schedule_stmt.next().unwrap() {
-                        let minute = schedule_stmt.read::<i64>(1).unwrap();
-                        let second = schedule_stmt.read::<i64>(2).unwrap();
+                    while let State::Row = watering_stmt.next().unwrap() {
+                        let minute = watering_stmt.read::<i64>(1).unwrap();
+                        let second = watering_stmt.read::<i64>(2).unwrap();
 
                         let total_secs = minute * 60 + second;
 
