@@ -45,10 +45,12 @@ armbian-config
 ```sh
 sudo cp www/* /var/www/html
 ```
-11. Add `target/release/smart_garden` to `/etc/systemd/system/smart-garden.service`
-`smart-garden.service`  
+11. Add `target/release/smart_garden` to `/etc/systemd/system/smart-garden.service`  
 
 Use your favorite text editor (nano, vim, etc.)  
+
+`smart-garden.service`  
+  
 ```sh
 [Unit]
 Description=Smart Garden Service
