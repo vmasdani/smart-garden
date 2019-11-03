@@ -333,11 +333,13 @@ fn main() -> Result<(), Box <dyn Error>> {
         disp.init().unwrap();
         disp.clear();
 
-        disp.draw(Rect::new(Coord::new(35, 0), Coord::new(87, 52)).with_stroke(Some(PixelColorU8(1u8))).into_iter());
-
         // disp.flush().unwrap();
 
         loop {
+            disp.clear();
+
+            disp.draw(Rect::new(Coord::new(35, 0), Coord::new(87, 52)).with_stroke(Some(PixelColorU8(1u8))).into_iter());
+
             if let Some(ip) = machine_ip::get() {
                 let detected_ip = format!("http://{}", ip.to_string());
                 // let detected_ip = String::from("http://192.168.1.1");
@@ -375,12 +377,16 @@ fn main() -> Result<(), Box <dyn Error>> {
             }
             else {
                 println!("IP not found!");
+                disp.clear();
+
                 disp.draw(
                     Font12x16::render_str(&format!("{}", "NO IP!".to_string()))
                     .into_iter()
                 );
+
+                disp.flush().unwrap();
             }
-            thread::sleep(Duration::from_secs(60));
+            thread::sleep(Duration::from_secs(10));
         }
     });
  
