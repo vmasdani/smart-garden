@@ -19,26 +19,30 @@ nmtui
 ```sh
 apt update
 ```
-5. Install nginx (systemd will be run automatically)
+5. Install nginx and mosquitto (systemd will be run automatically)
 ```sh
-apt install nginx
+apt install nginx mosquitto mosquitto-clients libmosquitto-dev
 ```
-6. Install Rust via Rustup
+6. Configure mosquitto to use websockets
+```sh
+echo $'port 1883\nlistener 9001\nprotocol websockets' > /etc/mosquitto/conf.d/websockets.conf
+```
+7. Install Rust via Rustup
 ```sh
 curl https://sh.rustup.rs -sSf | sh
 ```
-7. Clone this repo and compile the code
+8. Clone this repo and compile the code
 ```sh 
 git clone https://github.com/vmasdani/smart-garden.git &&\
 cd smart-garden &&\
 cargo build
 ```
-8. Enable `/dev/i2c-1` through `armbian-config`
+9. Enable `/dev/i2c-1` through `armbian-config`
 ```sh
 armbian-config
 ```
-9. Copy the contents of the `www` folder to `/usr/share/nginx/html`
+10. Copy the contents of the `www` folder to `/usr/share/nginx/html`
 ```sh
 sudo cp www/* /usr/share/nginx/html
 ```
-10. Add systemd to `target/debug` directory: TODO 
+11. Add systemd to `target/debug` directory: TODO 
