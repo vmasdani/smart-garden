@@ -45,4 +45,30 @@ armbian-config
 ```sh
 sudo cp www/* /var/www/html
 ```
-11. Add systemd to `target/debug` directory: TODO 
+11. Add `target/release/smart_garden` to `/etc/systemd/system/smart-garden.service`
+`smart-garden.service`  
+
+Use your favorite text editor (nano, vim, etc.)  
+```sh
+[Unit]
+Description=Smart Garden Service
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+ExecStart=/root/smart-garden/target/release/smart_garden
+
+[Install]
+WantedBy=multi-user.target
+```
+12. Run the systemd script
+```sh
+systemctl start smart-garden
+systemctl enable smart-garden
+```
+
+Congratulations, the smart garden IoT system is now active!
