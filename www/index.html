@@ -165,7 +165,7 @@
       let confirmed = confirm("Are you sure you want to power off?");
     
       if(confirmed) {
-        client.publish('watering/update', '');
+        client.publish('poweroff', '');
       }
     }
 
