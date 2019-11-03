@@ -60,7 +60,7 @@ Use your favorite text editor (nano, vim, etc.)
 ```sh
 [Unit]
 Description=Smart Garden Service
-After=network.target
+After=network.target network-online.target mosquitto.service nginx.service 
 StartLimitIntervalSec=0
 
 [Service]
