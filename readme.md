@@ -35,7 +35,7 @@ curl https://sh.rustup.rs -sSf | sh
 ```sh 
 git clone https://github.com/vmasdani/smart-garden.git &&\
 cd smart-garden &&\
-cargo build
+cargo build --release
 ```
 9. Enable `/dev/i2c-1` through `armbian-config`
 ```sh
