@@ -27,6 +27,12 @@ apt install nginx mosquitto mosquitto-clients libmosquitto-dev
 ```sh
 echo $'port 1883\nlistener 9001\nprotocol websockets' > /etc/mosquitto/conf.d/websockets.conf
 ```
+7. Configure timezone
+```sh
+timedatectl set-timezone Asia/Jakarta
+apt install ntpdate
+ntpdate -u 0.id.pool.ntp.org && hwclock -w
+```
 7. Install Rust via Rustup
 ```sh
 curl https://sh.rustup.rs -sSf | sh
