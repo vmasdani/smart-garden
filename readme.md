@@ -11,7 +11,7 @@ Your IP Address will be shown in the form of QR Code in the OLED display, make s
 # Cross compile requirement
 For ubuntu using rustup, run this:
 ```
-sudo apt install mosquitto libmosquitto-dev gcc-arm-linux-gnueabihf &&\
+sudo apt install mosquitto libmosquitto-dev gcc-arm-linux-gnueabihf libssl-dev &&\
 rustup target add arm-unknown-linux-gnueabihf &&\
 cargo build --target=arm-unknown-linux-gnueabihf
 ```
