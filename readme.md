@@ -11,7 +11,7 @@ Your IP Address will be shown in the form of QR Code in the OLED display, make s
 # Cross compile requirement
 For ubuntu using rustup, run this:
 ```
-sudo apt install mosquitto libmosquitto-dev gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libssl-dev &&\
+sudo apt install mosquitto libmosquitto-dev gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libssl-dev cmake &&\
 rustup target add arm-unknown-linux-gnueabihf &&\
 cargo build --target=arm-unknown-linux-gnueabihf
 ```
@@ -31,7 +31,7 @@ nmtui
 - Compile rust code
 ```sh
 apt update &&\
-apt install nginx mosquitto mosquitto-clients libmosquitto-dev ntpdate -y &&\
+apt install nginx mosquitto mosquitto-clients libmosquitto-dev libssl-dev cmake ntpdate -y &&\
 echo $'port 1883\nlistener 9001\nprotocol websockets' > /etc/mosquitto/conf.d/websockets.conf &&\
 timedatectl set-timezone Asia/Jakarta &&\
 ntpdate -u 0.id.pool.ntp.org && hwclock -w &&\
