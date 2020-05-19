@@ -8,14 +8,6 @@ Your IP Address will be shown in the form of QR Code in the OLED display, make s
 - Language: Rust
 - Database: SQLite
 
-# Cross compile requirement
-For ubuntu using rustup, run this:
-```
-sudo apt install mosquitto libmosquitto-dev gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libssl-dev cmake &&\
-rustup target add arm-unknown-linux-gnueabihf &&\
-cargo build --target=arm-unknown-linux-gnueabihf
-```
-
 Steps to get this running:
 1. Install [Armbian Bionic or Armbian Buster](https://www.armbian.com/orange-pi-zero/) for Orange Pi Zero, burn the image to SD card with [Etcher](https://www.balena.io/etcher/)
 2. Log into Orange Pi Zero with USB to TTL converter such as CH340 or CP2102 (Use `screen /dev/ttyUSB0 115200` for Linux or `Putty` for Windows) or through router (use `ssh root@<opi_ip_address>` for Linux or `Putty` for Windows). Password is 1234
