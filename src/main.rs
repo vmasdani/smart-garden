@@ -1,21 +1,6 @@
-extern crate chrono;
-extern crate qrcode;
-extern crate mosquitto_client as mosq;
-extern crate serde;
-extern crate serde_json;
-extern crate linux_embedded_hal as hal;
-extern crate embedded_graphics;
-extern crate ssd1306;
-extern crate machine_ip;
-extern crate wiringpi;
+pub mod ip_poller;
 
-use hal::I2cdev;
-use embedded_graphics::prelude::*;
-use embedded_graphics::primitives::{Rect, Line};
-use embedded_graphics::pixelcolor::PixelColorU8;
-use embedded_graphics::fonts::Font12x16;
-use ssd1306::{prelude::*, mode::GraphicsMode, Builder};
-use mosq::Mosquitto;
+use mosquitto_client::Mosquitto;
 use serde::{Serialize, Deserialize};
 use std::thread;
 use std::process::Command;
@@ -23,8 +8,8 @@ use std::error::Error;
 use std::time::Duration;
 use chrono::prelude::*;
 use sqlite::State;
-use qrcode::QrCode;
 use wiringpi::pin::Value::{High, Low};
+use ip_poller::ip_poller_thread;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct ScheduleArray {
@@ -44,7 +29,7 @@ struct WateringTime {
     second: i64
 }
 
-fn main() -> Result<(), Box <dyn Error>> {
+fn main() {
     // Create database file if not exists
     if let Ok(_) = sqlite::open("./data.db") {
         println!("Database opening OK!");
@@ -322,80 +307,12 @@ fn main() -> Result<(), Box <dyn Error>> {
         }
     });
     
-    // IP checker thread
     let ip_poller = thread::spawn(|| {
-        println!("IP poller thread started!");
-
-        let i2c = I2cdev::new("/dev/i2c-1").unwrap();
-
-        let mut disp: GraphicsMode<_> = Builder::new().connect_i2c(i2c).into();
-
-        disp.init().unwrap();
-        disp.clear();
-
-        // disp.flush().unwrap();
-
-        loop {
-            disp.clear();
-
-            disp.draw(Rect::new(Coord::new(35, 0), Coord::new(87, 52)).with_stroke(Some(PixelColorU8(1u8))).into_iter());
-
-            if let Some(ip) = machine_ip::get() {
-                let detected_ip = format!("http://{}", ip.to_string());
-                // let detected_ip = String::from("http://192.168.1.1");
-                println!("IP detected: {}", detected_ip);
-
-                let code = QrCode::new(detected_ip).unwrap();
-                
-                let ip_qr = code.render::<char>()
-                    .quiet_zone(false)
-                    .module_dimensions(2, 2)
-                    .build();
-
-                let mut y_point = 1;
-                let mut x_point = 36;    
-
-                for i in ip_qr.chars() {
-                    if i == '\n' {
-                        x_point = 36;
-                        y_point += 1;
-                    }
-
-                    if i == ' ' {
-                        // print!("{}", " ");
-                        disp.set_pixel(x_point, y_point, 1);
-                    }
-                    else {
-                        // print!("{}", i);
-                    }
-                    x_point += 1;
-                    
-                }
-                disp.flush().unwrap();
-
-                // println!("{}", ip_qr);
-            }
-            else {
-                println!("IP not found!");
-                disp.clear();
-
-                disp.draw(
-                    Font12x16::render_str(&format!("{}", "NO IP!".to_string()))
-                    .into_iter()
-                );
-
-                disp.flush().unwrap();
-            }
-            thread::sleep(Duration::from_secs(10));
-        }
+        ip_poller_thread();
     });
- 
+
     // Keep main thread alive
-    let handles = vec![listener, db_poller, ip_poller];
-    
-    for handle in handles {
+    for handle in vec![listener, db_poller, ip_poller] {
         handle.join().unwrap();
     }
-    
-    Ok(())
 }
