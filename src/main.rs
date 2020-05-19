@@ -108,7 +108,7 @@ fn main() -> Result<(), Box <dyn Error>> {
 
 
     // MQTT Listener thread
-    thread::spawn(|| {
+    let listener = thread::spawn(|| {
         println!("MQTT thread started!");
         let m = Mosquitto::new("client-1");
         
@@ -248,7 +248,7 @@ fn main() -> Result<(), Box <dyn Error>> {
 
     
     // Database poller thread
-    thread::spawn(|| {
+    let db_poller = thread::spawn(|| {
         let mut last_detected_time: DateTime<Local> = Local::now();
         
         loop {
@@ -263,7 +263,7 @@ fn main() -> Result<(), Box <dyn Error>> {
 
             println!("Last: {}.{}, Current:{}.{}", last_hour, last_minute, cur_hour, cur_minute);
             
-            if(last_hour == cur_hour && last_minute == cur_minute) {
+            if last_hour == cur_hour && last_minute == cur_minute {
                 
                 
                 println!("Time is still the same!");
@@ -285,7 +285,7 @@ fn main() -> Result<(), Box <dyn Error>> {
                     schedule_counter += 1;
                 }
                 
-                if(schedule_counter != 0) {
+                if schedule_counter != 0 {
                     println!("Match detected! Watering start...");
 
                     let mut counter = 0;
@@ -306,7 +306,7 @@ fn main() -> Result<(), Box <dyn Error>> {
 
                     pin.digital_write(High);
                     
-                    while(counter > 0) {
+                    while counter > 0 {
                         println!("{}...", counter);
                         counter -= 1;
                         thread::sleep(Duration::from_secs(1));       
@@ -323,7 +323,7 @@ fn main() -> Result<(), Box <dyn Error>> {
     });
     
     // IP checker thread
-    thread::spawn(|| {
+    let ip_poller = thread::spawn(|| {
         println!("IP poller thread started!");
 
         let i2c = I2cdev::new("/dev/i2c-1").unwrap();
@@ -356,12 +356,12 @@ fn main() -> Result<(), Box <dyn Error>> {
                 let mut x_point = 36;    
 
                 for i in ip_qr.chars() {
-                    if(i == '\n') {
+                    if i == '\n' {
                         x_point = 36;
                         y_point += 1;
                     }
 
-                    if(i == ' ') {
+                    if i == ' ' {
                         // print!("{}", " ");
                         disp.set_pixel(x_point, y_point, 1);
                     }
@@ -391,8 +391,11 @@ fn main() -> Result<(), Box <dyn Error>> {
     });
  
     // Keep main thread alive
-    loop {
+    let handles = vec![listener, db_poller, ip_poller];
     
+    for handle in handles {
+        handle.join().unwrap();
     }
+    
     Ok(())
 }
