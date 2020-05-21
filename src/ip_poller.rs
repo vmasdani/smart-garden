@@ -1,12 +1,14 @@
 use linux_embedded_hal::I2cdev;
 use embedded_graphics::prelude::*;
-use embedded_graphics::primitives::{Rect, Line};
+//use embedded_graphics::primitives::{Rect, Line};
+use embedded_graphics::primitives::{Rect};
 use embedded_graphics::pixelcolor::PixelColorU8;
-use embedded_graphics::fonts::Font12x16;
-use ssd1306::{prelude::*, mode::GraphicsMode, Builder};
+//use embedded_graphics::fonts::Font12x16;
+//use ssd1306::{prelude::*, mode::GraphicsMode, Builder};
+use ssd1306::{mode::GraphicsMode, Builder};
 use qrcode::QrCode;
 
-pub fn ip_poller_thread() {
+pub fn poll_loop() {
     println!("IP poller thread started!");
 
     let i2c = I2cdev::new("/dev/i2c-1").unwrap();

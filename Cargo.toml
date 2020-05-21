@@ -16,7 +16,11 @@ linux-embedded-hal = "0.2.2"
 embedded-graphics = "0.4.9"
 ssd1306 = "0.2.6"
 mosquitto-client = "0.1.5"
-sqlite = "0.25.0"
+# sqlite = "0.25.0"
+
+[dependencies.rusqlite]
+version = "0.21.0"
+features = ["bundled"]
 
 [dependencies.wiringpi]
 version="0.2"

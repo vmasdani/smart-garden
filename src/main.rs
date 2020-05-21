@@ -1,35 +1,48 @@
 pub mod ip_poller;
+pub mod db;
+pub mod db_poller;
+pub mod mqtt_listener;
 
-use mosquitto_client::Mosquitto;
-use serde::{Serialize, Deserialize};
-use std::thread;
-use std::process::Command;
-use std::error::Error;
-use std::time::Duration;
-use chrono::prelude::*;
-use sqlite::State;
-use wiringpi::pin::Value::{High, Low};
-use ip_poller::ip_poller_thread;
-
-#[derive(Serialize, Deserialize, Debug)]
-struct ScheduleArray {
-    data: Vec<Schedule>
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct Schedule {
-    id: i64,
-    hour: i64,
-    minute: i64,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct WateringTime {
-    minute: i64,
-    second: i64
-}
+//use mosquitto_client::Mosquitto;
+//use serde::{Serialize, Deserialize};
+use std::{thread};
+use std::sync::{Arc, Mutex};
+//use std::time::Duration;
+//use chrono::prelude::*;
+//use wiringpi::pin::Value::{High, Low};
 
 fn main() {
+    // Database initialization
+    let conn = if let Ok(conn) = db::init() {
+        Arc::new(Mutex::new(conn))
+    } else {
+        panic!("Failed opening database!")
+    };
+
+    // MQTT Listener thread
+    let conn_mqtt_clone = Arc::clone(&conn);
+    let _mqtt_listener_handle = thread::spawn(move || {
+        mqtt_listener::listen(conn_mqtt_clone);
+    });
+
+    // Database poller thread
+    let conn_db_poller_clone = Arc::clone(&conn);    
+    let _db_poller_handle = thread::spawn(move || {
+        db_poller::poll_loop(conn_db_poller_clone);
+    });
+
+    /*
+    let ip_poller_handle = thread::spawn(|| {
+        ip_poller::poll_loop();
+    });
+
+    // Keep main thread alive
+    for handle in vec![mqtt_listener_handle, db_poller_handle, ip_poller_handle] {
+        handle.join().unwrap();
+    }
+    */
+    
+    /*
     // Create database file if not exists
     if let Ok(_) = sqlite::open("./data.db") {
         println!("Database opening OK!");
@@ -306,13 +319,6 @@ fn main() {
             thread::sleep(Duration::from_secs(10));
         }
     });
+    */
     
-    let ip_poller = thread::spawn(|| {
-        ip_poller_thread();
-    });
-
-    // Keep main thread alive
-    for handle in vec![listener, db_poller, ip_poller] {
-        handle.join().unwrap();
-    }
 }
