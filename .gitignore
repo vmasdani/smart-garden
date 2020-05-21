@@ -1,5 +1,5 @@
 /target
 **/*.rs.bk
 *.swp
-*.db
-*.db3
+/*.db
+/*.db3
