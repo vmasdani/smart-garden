@@ -10,6 +10,21 @@ use std::sync::{Arc, Mutex};
 //use std::time::Duration;
 //use chrono::prelude::*;
 //use wiringpi::pin::Value::{High, Low};
+use rusqlite::Connection;
+use async_std::task;
+
+async fn main_loop(conn: Arc<Mutex<Connection>>) {
+    let db_conn_clone = Arc::clone(&conn);
+    let mqtt_conn_clone = Arc::clone(&conn);
+    
+    let db_task = db_poller::poll_loop(db_conn_clone);
+    //let ip_task = ip_poller::poll_loop();
+    let mqtt_task = mqtt_listener::listen(mqtt_conn_clone);
+
+    futures::join!(db_task, mqtt_task);
+
+    // join!(db_task, ip_task, mqtt_task).await;
+}
 
 fn main() {
     // Database initialization
@@ -19,6 +34,9 @@ fn main() {
         panic!("Failed opening database!")
     };
 
+    task::block_on(main_loop(conn));
+
+    /*
     // MQTT Listener thread
     let conn_mqtt_clone = Arc::clone(&conn);
     let _mqtt_listener_handle = thread::spawn(move || {
@@ -30,6 +48,7 @@ fn main() {
     let _db_poller_handle = thread::spawn(move || {
         db_poller::poll_loop(conn_db_poller_clone);
     });
+    */
 
     /*
     let ip_poller_handle = thread::spawn(|| {

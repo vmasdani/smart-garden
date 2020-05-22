@@ -7,8 +7,10 @@ use embedded_graphics::pixelcolor::PixelColorU8;
 //use ssd1306::{prelude::*, mode::GraphicsMode, Builder};
 use ssd1306::{mode::GraphicsMode, Builder};
 use qrcode::QrCode;
+use async_std::task;
+use std::time::Duration;
 
-pub fn poll_loop() {
+pub async fn poll_loop() {
     println!("IP poller thread started!");
 
     let i2c = I2cdev::new("/dev/i2c-1").unwrap();
@@ -60,5 +62,7 @@ pub fn poll_loop() {
 
             // println!("{}", ip_qr);
         }
+    
+        task::sleep(Duration::from_secs(5)).await;
     }
 }
