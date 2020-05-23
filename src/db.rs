@@ -7,10 +7,12 @@ pub fn init() -> Result<Connection>{
         create table if not exists schedule (
             id integer primary key autoincrement,
             hour integer,
-            minute integer
+            minute integer,
+            watering_time integer
         )
     ", params![])?;
 
+    /*
     conn.execute("
         create table if not exists watering_time (
             id integer primary key autoincrement,
@@ -18,6 +20,7 @@ pub fn init() -> Result<Connection>{
             second integer
         )
     ", params![])?;
+    */
 
     conn.execute("
         create table if not exists sensor (

@@ -3,4 +3,4 @@
 *.swp
 /*.db
 /*.db3
-/rust*
+/*-localhost-1883

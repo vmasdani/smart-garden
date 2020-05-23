@@ -20,6 +20,7 @@ mosquitto-client = "0.1.5"
 async-std = "1.5.0"
 futures = "0.3.5"
 paho-mqtt = "0.7.1"
+uuid = { version = "0.8", features = ["serde", "v4"] }
 
 [dependencies.rusqlite]
 version = "0.21.0"
