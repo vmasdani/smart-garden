@@ -1,12 +1,14 @@
 extern crate paho_mqtt as mqtt;
 
+pub mod router;
+
 use rusqlite::Connection;
 use std::sync::{Arc, Mutex};
 use async_std::task;
 use std::time::Duration;
 use std::process;
 
-pub async fn listen(_conn: Arc<Mutex<Connection>>) {
+pub async fn listen(conn: Arc<Mutex<Connection>>) {
     fn on_connect_success(cli: &mqtt::AsyncClient, _msgid: u16) {
         println!("Connection succeeded");
         cli.subscribe_many(&["#"], &[1]);
@@ -38,12 +40,15 @@ pub async fn listen(_conn: Arc<Mutex<Connection>>) {
         cli.reconnect_with_callbacks(on_connect_success, on_connect_failure);
     });
 
-    cli.set_message_callback(|_cli, msg| {
+    cli.set_message_callback(move |_cli, msg| {
         if let Some(msg) = msg {
             let topic = msg.topic();
             let payload_str = msg.payload_str();
 
             println!("{} - {}", topic, payload_str);
+     
+            // let conn_clone = Arc::clone(&conn);
+            router::route(topic.to_string(), payload_str.to_string(), &conn);
         }
     });
 
