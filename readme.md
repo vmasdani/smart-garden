@@ -27,7 +27,7 @@ timedatectl set-local-rtc 1 &&\
 timedatectl set-ntp true
 ```
 5. Compile rust code, install Rust
-```
+```sh
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 git clone https://github.com/vmasdani/smart-garden
 cd smart-garden
