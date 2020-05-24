@@ -1,9 +1,10 @@
 mod ip_poller;
-mod db;
+mod init;
 mod db_poller;
 mod mqtt_listener;
 mod router;
 mod models;
+mod test_display;
 
 //use mosquitto_client::Mosquitto;
 //use serde::{Serialize, Deserialize};
@@ -29,14 +30,14 @@ async fn main_loop(conn: Arc<Mutex<Connection>>) {
 }
 
 fn main() {
-    // Database initialization
-    let conn = if let Ok(conn) = db::init() {
-        Arc::new(Mutex::new(conn))
-    } else {
-        panic!("Failed opening database!")
-    };
+    let (conn, disp, relay_pin) = init::init();
 
-    task::block_on(main_loop(conn));
+    let mut disp = disp;
+    test_display::test_display(&mut disp);
+
+    let conn_arc = Arc::new(Mutex::new(conn));
+
+    task::block_on(main_loop(conn_arc));
 
     /*
     // MQTT Listener thread

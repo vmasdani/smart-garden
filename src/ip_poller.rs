@@ -1,8 +1,9 @@
 use linux_embedded_hal::I2cdev;
 use embedded_graphics::prelude::*;
-//use embedded_graphics::primitives::{Rect, Line};
-use embedded_graphics::primitives::{Rect};
+use embedded_graphics::primitives::{Rect, Line};
+//use embedded_graphics::primitives::{Rectangle};
 use embedded_graphics::pixelcolor::PixelColorU8;
+//use embedded_graphics::pixelcolor::BinaryColor;
 //use embedded_graphics::fonts::Font12x16;
 //use ssd1306::{prelude::*, mode::GraphicsMode, Builder};
 use ssd1306::{mode::GraphicsMode, Builder};
