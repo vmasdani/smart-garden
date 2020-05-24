@@ -8,7 +8,8 @@ pub fn init() -> Result<Connection>{
             id integer primary key autoincrement,
             hour integer,
             minute integer,
-            watering_time integer
+            watering_minute integer,
+            watering_second integer
         )
     ", params![])?;
 

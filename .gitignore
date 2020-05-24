@@ -3,4 +3,5 @@
 *.swp
 /*.db
 /*.db3
+/data.db3
 /*-localhost-1883

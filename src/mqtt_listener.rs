@@ -1,7 +1,6 @@
 extern crate paho_mqtt as mqtt;
 
-pub mod router;
-
+use crate::router;
 use rusqlite::Connection;
 use std::sync::{Arc, Mutex};
 use async_std::task;
