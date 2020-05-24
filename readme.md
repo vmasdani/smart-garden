@@ -15,22 +15,23 @@ Steps to get this running:
 ```sh
 nmtui
 ```
-4. Install required software & some of the configs:  
+4. Install required software & configure:  
 - Configure mosquitto to use Websockets
 - Set timezone to Asia/Jakarta & synchronize hardware clock with NTP
-- Clone git repository
-- Copy the web contents to /var/www/html (nginx's default root dir)
-- Compile rust code
 ```sh
 apt update &&\
-apt install nginx mosquitto mosquitto-clients libmosquitto-dev libssl-dev cmake ntpdate -y &&\
+apt install nginx mosquitto mosquitto-clients libmosquitto-dev libssl-dev cmake -y &&\
 echo $'port 1883\nlistener 9001\nprotocol websockets' > /etc/mosquitto/conf.d/websockets.conf &&\
 timedatectl set-timezone Asia/Jakarta &&\
-ntpdate -u 0.id.pool.ntp.org && hwclock -w &&\
-curl https://sh.rustup.rs -sSf | sh &&\
-git clone https://github.com/vmasdani/smart-garden.git &&\
-cd smart-garden &&\
-sudo cp www/* /var/www/html &&\
+timedatectl set-local-rtc 1 &&\
+timedatectl set-ntp true
+```
+5. Compile rust code, install Rust
+```
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+git clone https://github.com/vmasdani/smart-garden
+cd smart-garden
+sudo cp www/* /var/www/html
 cargo build --release
 ```
 6. Enable `/dev/i2c-1` through `armbian-config`
