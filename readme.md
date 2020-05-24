@@ -20,7 +20,7 @@ nmtui
 - Set timezone to Asia/Jakarta & synchronize hardware clock with NTP
 ```sh
 apt update &&\
-apt install nginx mosquitto mosquitto-clients libmosquitto-dev libssl-dev cmake -y &&\
+apt install nginx mosquitto cmake -y &&\
 echo $'port 1883\nlistener 9001\nprotocol websockets' > /etc/mosquitto/conf.d/websockets.conf &&\
 timedatectl set-timezone Asia/Jakarta &&\
 timedatectl set-local-rtc 1 &&\
@@ -38,7 +38,7 @@ cargo build --release
 ```sh
 armbian-config
 ```
-7. Add `target/release/smart_garden` to `/etc/systemd/system/smart-garden.service`  
+7. Add systemd service with ExecStart of produced binary `target/release/smart_garden` to `/etc/systemd/system/smart-garden.service`  
 
 Use your favorite text editor (nano, vim, etc.)  
 
