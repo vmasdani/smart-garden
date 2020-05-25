@@ -27,9 +27,9 @@ gpio-cdev = "0.2"
 version = "0.21.0"
 features = ["bundled"]
 
-[dependencies.wiringpi]
-version="0.2"
-features = ["orangepi"]
+# [dependencies.wiringpi]
+# version="0.2"
+# features = ["orangepi"]
 
 [profile.release]
 codegen-units=1

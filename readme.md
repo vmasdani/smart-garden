@@ -20,7 +20,7 @@ nmtui
 - Set timezone to Asia/Jakarta & synchronize hardware clock with NTP
 ```sh
 apt update &&\
-apt install nginx mosquitto cmake -y &&\
+apt install nginx mosquitto cmake libssl-dev -y &&\
 echo $'port 1883\nlistener 9001\nprotocol websockets' > /etc/mosquitto/conf.d/websockets.conf &&\
 timedatectl set-timezone Asia/Jakarta &&\
 timedatectl set-local-rtc 1 &&\
