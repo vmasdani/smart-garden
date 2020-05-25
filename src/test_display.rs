@@ -11,7 +11,7 @@ pub fn test_display(disp: &mut GraphicsMode<I2cInterface<I2cdev>>) {
     );
 
     disp.draw(
-        Font6x8::render_str(&"144H, mohon maaf".to_string())
+        Font6x8::render_str(&"1441H, mohon maaf".to_string())
             .translate(Coord::new(0, 10))
             .into_iter()
     );

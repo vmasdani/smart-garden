@@ -2,12 +2,16 @@ use rusqlite::{params, Connection};
 use ssd1306::prelude::*;
 use ssd1306::Builder;
 use ssd1306::interface::i2c::I2cInterface;
-use gpio_cdev::{Chip, LineHandle, LineRequestFlags, EventRequestFlags, EventType};
-use std::process;
+use gpio_cdev::{Chip, LineHandle, LineRequestFlags};
+//use std::process;
 use linux_embedded_hal::I2cdev;
 
 
-pub fn init() -> (Connection, GraphicsMode<I2cInterface<I2cdev>>, LineHandle) {
+pub fn init() -> (
+    Connection, 
+    GraphicsMode<I2cInterface<I2cdev>>, 
+    LineHandle
+) {
     // Inititate GPIO
     let relay_pin = if let Ok(relay_pin) = gpio() {
         relay_pin

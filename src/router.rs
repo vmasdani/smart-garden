@@ -2,17 +2,23 @@ extern crate paho_mqtt as mqtt;
 
 use std::sync::{Arc, Mutex};
 use rusqlite::{params, Connection};
-use uuid::Uuid;
-use std::process;
+//use uuid::Uuid;
+//use std::process;
 use crate::models::*;
+use std::{thread, time::Duration};
 
-pub fn route(topic: String, msg: String, cli: &mqtt::AsyncClient, conn: &Arc<Mutex<Connection>>) {
+pub fn route(
+    topic: String, 
+    msg: String, 
+    cli: &mqtt::AsyncClient, 
+    conn: &Arc<Mutex<Connection>>
+) {
     match topic.as_str() {
         "schedule/add" => {
             println!("Schedule topic, msg: {}", msg);
 
             // test add to db
-            let conn = conn.lock().unwrap();
+            let _conn = conn.lock().unwrap();
         },
         "schedule/req" => {
             let conn = conn.lock().unwrap();
@@ -34,6 +40,14 @@ pub fn route(topic: String, msg: String, cli: &mqtt::AsyncClient, conn: &Arc<Mut
         },
         "schedule/res" => {
         
+        },
+        "water/on" => {
+            println!("Turning on!");
+            //thread::sleep(Duration::from_secs(2));
+            //println!("Watering kompliet!");
+        },
+        "water/off" => {
+            println!("Turning off!");
         },
         "watering_time" => {
             println!("Watering time topic");

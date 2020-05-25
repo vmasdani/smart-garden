@@ -44,26 +44,27 @@ Use your favorite text editor (nano, vim, etc.)
 
 `smart-garden.service`  
   
-```sh
-[Unit]
-Description=Smart Garden Service
-After=network.target network-online.target mosquitto.service nginx.service 
-StartLimitIntervalSec=0
+	```sh
+	[Unit]
+	Description=Smart Garden Service
+	After=network.target network-online.target mosquitto.service nginx.service 
+	StartLimitIntervalSec=0
 
-[Service]
-Type=simple
-Restart=always
-RestartSec=1
-User=root
-ExecStart=/root/smart-garden/target/release/smart_garden
+	[Service]
+	Type=simple
+	Restart=always
+	RestartSec=1
+	User=root
+	ExecStart=/root/smart-garden/target/release/smart_garden
 
-[Install]
-WantedBy=multi-user.target
-```
-8. Run the systemd script
-```sh
-systemctl start smart-garden &&\
-systemctl enable smart-garden
-```
+	[Install]
+	WantedBy=multi-user.target
+	```
+	8. Run the systemd script
+	```sh
+	systemctl start smart-garden &&\
+	systemctl enable smart-garden
+	```
 
-Congratulations, the smart garden IoT system is now active!
+	Congratulations, the smart garden IoT system is now active!
+	

@@ -3,12 +3,17 @@ extern crate paho_mqtt as mqtt;
 use crate::router;
 use rusqlite::Connection;
 use std::sync::{Arc, Mutex};
-use async_std::task;
+//use async_std::task;
 use std::time::Duration;
 use std::process;
+use std::thread;
 use uuid::Uuid;
+use gpio_cdev::LineHandle;
 
-pub async fn listen(conn: Arc<Mutex<Connection>>) {
+pub fn listen(
+    conn: Arc<Mutex<Connection>>,
+    _relay_pin: Arc<Mutex<LineHandle>>
+) {
     fn on_connect_success(cli: &mqtt::AsyncClient, _msgid: u16) {
         println!("Connection succeeded");
         cli.subscribe_many(&["#"], &[1]);
@@ -16,6 +21,7 @@ pub async fn listen(conn: Arc<Mutex<Connection>>) {
     }
 
     fn on_connect_failure(cli: &mqtt::AsyncClient, _msgid: u16, _rc: i32) {
+        thread::sleep(Duration::from_millis(2500));
         cli.reconnect_with_callbacks(on_connect_success, on_connect_failure);
     }
 
@@ -39,6 +45,7 @@ pub async fn listen(conn: Arc<Mutex<Connection>>) {
 
     cli.set_connection_lost_callback(|cli: &mqtt::AsyncClient| {
         println!("Connection lost! Attempting reconnect..");
+        thread::sleep(Duration::from_millis(2500));
         cli.reconnect_with_callbacks(on_connect_success, on_connect_failure);
     });
 
@@ -50,7 +57,12 @@ pub async fn listen(conn: Arc<Mutex<Connection>>) {
             println!("{} - {}", topic, payload_str);
      
             // let conn_clone = Arc::clone(&conn);
-            router::route(topic.to_string(), payload_str.to_string(), &cli, &conn);
+            router::route(
+                topic.to_string(), 
+                payload_str.to_string(), 
+                &cli, 
+                &conn
+            );
         }
     });
 
@@ -64,6 +76,6 @@ pub async fn listen(conn: Arc<Mutex<Connection>>) {
     cli.connect_with_callbacks(conn_opts, on_connect_success, on_connect_failure);
 
     loop {
-        task::sleep(Duration::from_secs(1)).await;
+        thread::sleep(Duration::from_secs(1));
     }
 }

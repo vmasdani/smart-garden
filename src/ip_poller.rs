@@ -1,6 +1,6 @@
 use linux_embedded_hal::I2cdev;
 use embedded_graphics::prelude::*;
-use embedded_graphics::primitives::{Rect, Line};
+use embedded_graphics::primitives::{Rect};
 //use embedded_graphics::primitives::{Rectangle};
 use embedded_graphics::pixelcolor::PixelColorU8;
 //use embedded_graphics::pixelcolor::BinaryColor;
@@ -8,10 +8,11 @@ use embedded_graphics::pixelcolor::PixelColorU8;
 //use ssd1306::{prelude::*, mode::GraphicsMode, Builder};
 use ssd1306::{mode::GraphicsMode, Builder};
 use qrcode::QrCode;
-use async_std::task;
+//use async_std::task;
 use std::time::Duration;
+use std::thread;
 
-pub async fn poll_loop() {
+pub fn poll_loop() {
     println!("IP poller thread started!");
 
     let i2c = I2cdev::new("/dev/i2c-1").unwrap();
@@ -64,6 +65,6 @@ pub async fn poll_loop() {
             // println!("{}", ip_qr);
         }
     
-        task::sleep(Duration::from_secs(5)).await;
+        thread::sleep(Duration::from_secs(5));
     }
 }

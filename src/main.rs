@@ -6,38 +6,42 @@ mod router;
 mod models;
 mod test_display;
 
-//use mosquitto_client::Mosquitto;
-//use serde::{Serialize, Deserialize};
 use std::{thread};
 use std::sync::{Arc, Mutex};
-//use std::time::Duration;
-//use chrono::prelude::*;
-//use wiringpi::pin::Value::{High, Low};
-use rusqlite::Connection;
-use async_std::task;
-
-async fn main_loop(conn: Arc<Mutex<Connection>>) {
-    let db_conn_clone = Arc::clone(&conn);
-    let mqtt_conn_clone = Arc::clone(&conn);
-    
-    let db_task = db_poller::poll_loop(db_conn_clone);
-    //let ip_task = ip_poller::poll_loop();
-    let mqtt_task = mqtt_listener::listen(mqtt_conn_clone);
-
-    futures::join!(db_task, mqtt_task);
-
-    // join!(db_task, ip_task, mqtt_task).await;
-}
 
 fn main() {
-    let (conn, disp, relay_pin) = init::init();
+    let (conn, mut disp, relay_pin) = init::init();
 
-    let mut disp = disp;
-    test_display::test_display(&mut disp);
+    //test_display::test_display(&mut disp);
 
     let conn_arc = Arc::new(Mutex::new(conn));
+    let _disp_arc = Arc::new(Mutex::new(disp));
+    let relay_pin_arc = Arc::new(Mutex::new(relay_pin));
+    
+    // Arc clones for db poller
+    let db_conn_clone = Arc::clone(&conn_arc);
+    
+    // Arc clones for MQTT
+    let mqtt_conn_clone = Arc::clone(&conn_arc);
+    let mqtt_relay_pin_clone = Arc::clone(&relay_pin_arc);
 
-    task::block_on(main_loop(conn_arc));
+    let db_handle = thread::spawn(move || {
+        db_poller::poll_loop(db_conn_clone);
+    }); 
+    
+    let mqtt_handle = thread::spawn(move || {
+        mqtt_listener::listen(mqtt_conn_clone, mqtt_relay_pin_clone);
+    });
+
+    let ip_poller_handle = thread::spawn(move || {
+        //ip_poller::poll_loop();
+    });
+
+    for handle in vec![db_handle, mqtt_handle, ip_poller_handle] {
+        handle.join().unwrap();
+    }
+
+    // task::block_on(main_loop(conn_arc, disp_arc, relay_arc));
 
     /*
     // MQTT Listener thread
