@@ -3,7 +3,7 @@ mod init;
 mod db_poller;
 mod mqtt_listener;
 mod router;
-mod models;
+mod model;
 mod test_display;
 
 use std::{thread, time::Duration};

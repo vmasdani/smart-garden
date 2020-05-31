@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 use rusqlite::{params, Connection};
 //use uuid::Uuid;
 //use std::process;
-use crate::models::*;
+use crate::model::*;
 use std::{thread, time::Duration};
 
 pub fn route(
@@ -16,9 +16,27 @@ pub fn route(
     match topic.as_str() {
         "schedule/add" => {
             println!("Schedule topic, msg: {}", msg);
+            
+            let schedule: serde_json::Result<Schedule> = serde_json::from_str(msg.as_str());
 
-            // test add to db
-            let _conn = conn.lock().unwrap();
+            match schedule {
+                Ok(schedule) => {
+                    // test add to db
+                    println!("{:?}", schedule);
+                    let mut id: String;
+                    {
+                        let conn = conn.lock().unwrap();
+                        conn.execute("insert into schedule(hour, minute, watering_minute, watering_second) values(?, ?, ?, ?)", params![schedule.hour, schedule.minute, schedule.watering_minute, schedule.watering_second]).unwrap();
+                        id = conn.last_insert_rowid().to_string();
+                    }
+                    println!("Inserted id: {}", id);
+                    let msg = mqtt::Message::new("schedule/res", id, 0);
+                    cli.publish(msg);
+                },
+                _ => {
+                    println!("Parsing schedule JSON failed.");
+                }
+            }
         },
         "schedule/req" => {
             let conn = conn.lock().unwrap();
