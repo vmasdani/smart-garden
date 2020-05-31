@@ -62,7 +62,7 @@ pub fn disp(
         None => {
             println!("Error opening i2c! Retrying in 5 secs..");
             thread::sleep(Duration::from_secs(5));
-            return disp(disp_arc);
+            disp(disp_arc);
         }
     }
 
@@ -83,13 +83,13 @@ pub fn disp(
             } else {
                 println!("Error initiating OLED! retrying in 5 secs...");
                 thread::sleep(Duration::from_secs(5));
-                return disp(disp_arc);
+                disp(disp_arc);
             }
         },
         None => {
             println!("Error opening i2c! retrying in 5 secs...");
             thread::sleep(Duration::from_secs(5));
-            return disp(disp_arc);
+            disp(disp_arc);
         }
     }
 }

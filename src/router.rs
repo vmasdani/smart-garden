@@ -11,7 +11,7 @@ pub fn route(
     topic: String, 
     msg: String, 
     cli: &mqtt::AsyncClient, 
-    conn: &Arc<Mutex<Connection>>
+    conn: Arc<Mutex<Connection>>
 ) {
     match topic.as_str() {
         "schedule/add" => {

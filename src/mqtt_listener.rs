@@ -55,13 +55,15 @@ pub fn listen(
             let payload_str = msg.payload_str();
 
             println!("{} - {}", topic, payload_str);
-     
+ 
+            let conn_clone = Arc::clone(&conn);
+
             // let conn_clone = Arc::clone(&conn);
             router::route(
                 topic.to_string(), 
                 payload_str.to_string(), 
                 &cli, 
-                &conn
+                conn_clone
             );
         }
     });
