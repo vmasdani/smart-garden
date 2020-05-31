@@ -6,16 +6,16 @@ mod router;
 mod models;
 mod test_display;
 
-use std::{thread};
+use std::{thread, time::Duration};
 use std::sync::{Arc, Mutex};
 
 fn main() {
-    let (conn, mut disp, relay_pin) = init::init();
+    let (conn, relay_pin) = init::init();
 
     //test_display::test_display(&mut disp);
 
     let conn_arc = Arc::new(Mutex::new(conn));
-    let _disp_arc = Arc::new(Mutex::new(disp));
+    // let _disp_arc = Arc::new(Mutex::new(disp));
     let relay_pin_arc = Arc::new(Mutex::new(relay_pin));
     
     // Arc clones for db poller
@@ -35,6 +35,7 @@ fn main() {
 
     let ip_poller_handle = thread::spawn(move || {
         //ip_poller::poll_loop();
+        let mut disp = init::disp();
     });
 
     for handle in vec![db_handle, mqtt_handle, ip_poller_handle] {

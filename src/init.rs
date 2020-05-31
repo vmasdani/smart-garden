@@ -5,11 +5,11 @@ use ssd1306::interface::i2c::I2cInterface;
 use gpio_cdev::{Chip, LineHandle, LineRequestFlags};
 //use std::process;
 use linux_embedded_hal::I2cdev;
-
+use std::{time::Duration, thread};
 
 pub fn init() -> (
     Connection, 
-    GraphicsMode<I2cInterface<I2cdev>>, 
+    // GraphicsMode<I2cInterface<I2cdev>>, 
     LineHandle
 ) {
     // Inititate GPIO
@@ -20,7 +20,7 @@ pub fn init() -> (
     };
     
     // Initiate Display
-    let disp = disp();
+    // let disp = disp();
 
     // Initiate DB
     let db = if let Ok(db) = db() {
@@ -30,7 +30,8 @@ pub fn init() -> (
         panic!("Error opening db!");
     };
 
-    (db, disp, relay_pin)
+    //(db, disp, relay_pin)
+    (db, relay_pin)
 }
 
 pub fn gpio() -> gpio_cdev::errors::Result<LineHandle> {
@@ -42,17 +43,50 @@ pub fn gpio() -> gpio_cdev::errors::Result<LineHandle> {
 }
 
 pub fn disp() -> GraphicsMode<I2cInterface<I2cdev>> {
-    let i2c = if let Ok(i2c) = I2cdev::new("/dev/i2c-1") {
-        println!("Success opening i2c!");
-        i2c
-    } else {
-        panic!("Error opening i2c!");
-    };
+    let mut i2c =
+        if let Ok(i2c) = I2cdev::new("/dev/i2c-1") {
+            println!("Success opening i2c!");
+            Some(i2c)
+        } else {
+            println!("Error opening i2c!");
+            None
+        };
 
-    let mut disp: GraphicsMode<_> = Builder::new().connect_i2c(i2c).into();
-    disp.init().unwrap();
-    disp.flush().unwrap();
-    disp
+    match &i2c {
+        Some(i2c) => {
+            println!("Success opening i2c!");
+        },
+        None => {
+            println!("Error opening i2c! Retrying in 5 secs..");
+            thread::sleep(Duration::from_secs(5));
+            return disp()
+        }
+    }
+
+    let disp_result: Option<GraphicsMode<_>> = 
+        if let Some(i2c) = i2c {
+            Some(Builder::new().connect_i2c(i2c).into())
+        } else {
+            None
+        };
+
+    match disp_result {
+        Some(mut disp_result) => {
+            if let Ok(_) = disp_result.init() {
+                disp_result.flush().unwrap();
+                disp_result
+            } else {
+                println!("Error connecting to OLED! retrying in 5 secs...");
+                thread::sleep(Duration::from_secs(5));
+                disp()
+            }
+        },
+        None => {
+            println!("Error opening i2c! retrying in 5 secs...");
+            thread::sleep(Duration::from_secs(5));
+            disp()
+        }
+    }
 }
 
 pub fn db() -> rusqlite::Result<Connection>{
