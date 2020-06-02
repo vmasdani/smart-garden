@@ -4,7 +4,7 @@ mod db_poller;
 mod mqtt_listener;
 mod router;
 mod model;
-mod test_display;
+mod qr_fit;
 
 use std::{thread, time::Duration};
 use std::sync::{Arc, Mutex};
@@ -27,8 +27,6 @@ fn main() {
     // Arc clones for MQTT
     let mqtt_conn_clone = Arc::clone(&conn_arc);
     let mqtt_relay_pin_clone = Arc::clone(&relay_pin_arc);
-
-    
 
     let db_handle = thread::spawn(move || {
         db_poller::poll_loop(db_conn_clone, db_relay_pin_clone);

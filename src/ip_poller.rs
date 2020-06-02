@@ -1,18 +1,18 @@
 use linux_embedded_hal::I2cdev;
-use embedded_graphics::prelude::*;
-use embedded_graphics::primitives::{Rect};
-//use embedded_graphics::primitives::{Rectangle};
-use embedded_graphics::pixelcolor::PixelColorU8;
-//use embedded_graphics::pixelcolor::BinaryColor;
-use embedded_graphics::fonts::Font12x16;
-//use ssd1306::{prelude::*, mode::GraphicsMode, Builder};
+use embedded_graphics::{
+    fonts::{Font12x16, Text},
+    pixelcolor::BinaryColor,
+    prelude::*,
+    primitives::Rectangle,
+    style::{PrimitiveStyle, TextStyle, PrimitiveStyleBuilder}
+};
 use ssd1306::{Builder, interface::I2cInterface};
 use ssd1306::prelude::*;
 use qrcode::QrCode;
-//use async_std::task;
 use std::time::Duration;
 use std::thread;
 use std::sync::{Arc, Mutex};
+use crate::qr_fit;
 
 pub fn poll_loop(
     disp_arc: Arc<Mutex<Option<GraphicsMode<I2cInterface<I2cdev>>>>>    
@@ -25,46 +25,47 @@ pub fn poll_loop(
                 Some(ref mut disp) => {
                     disp.clear();
 
-                    disp.draw(Rect::new(Coord::new(35, 0), Coord::new(87, 52)).with_stroke(Some(PixelColorU8(1u8))).into_iter());
-
                     if let Some(ip) = machine_ip::get() {
                         let detected_ip = format!("http://{}", ip.to_string());
-                        // let detected_ip = String::from("http://192.168.1.1");
                         println!("IP detected: {}", detected_ip);
 
                         let code = QrCode::new(detected_ip).unwrap();
                         
                         let ip_qr = code.render::<char>()
                             .quiet_zone(false)
-                            .module_dimensions(2, 2)
+                            .module_dimensions(1, 1)
                             .build();
 
-                        let mut y_point = 1;
-                        let mut x_point = 36;    
-
-                        for i in ip_qr.chars() {
-                            if i == '\n' {
-                                x_point = 36;
-                                y_point += 1;
+                        let ip_qr_fit = qr_fit::fit(ip_qr);      
+                        
+                        for x in 0..62 {
+                            for y in 0..62 {
+                                match ip_qr_fit[x][y] {
+                                    0 => Pixel(Point::new(x as i32 + 1, y as i32 + 1), BinaryColor::On).draw(disp),
+                                    _ => Pixel(Point::new(x as i32 + 1, y as i32 + 1), BinaryColor::Off).draw(disp)
+                                };
                             }
-
-                            if i == ' ' {
-                                // print!("{}", " ");
-                                disp.set_pixel(x_point, y_point, 1);
-                            }
-                            else {
-                                // print!("{}", i);
-                            }
-                            x_point += 1;
-                            
                         }
+                        
+                        // Draw guard
+                        
+                        Rectangle::new(Point::new(0, 0), Point::new(63, 63))
+                            .into_styled(
+                                PrimitiveStyleBuilder::new()
+                                    .stroke_width(1)
+                                    .stroke_color(BinaryColor::On)
+                                    .build()
+                            )
+                            .draw(disp);
+                        
                         disp.flush().unwrap();
-
-                        // println!("{}", ip_qr);
                     } else {
-                        disp.draw(
-                            Font12x16::render_str(&"NO IP".to_string()).translate(Coord::new(0, 0)).into_iter()    
-                        );
+                        disp.clear();
+
+                        Text::new("NO IP", Point::new(0, 0))
+                            .into_styled(TextStyle::new(Font12x16, BinaryColor::On))
+                            .draw(disp);
+
                         disp.flush().unwrap();
                     }
                 },
@@ -72,65 +73,8 @@ pub fn poll_loop(
                     println!("Display not initiated.");
                 }
             }
-            // *disp.clear();
-            
-            /*
-            match disp {
-                Some(disp) => {
-                    /*
-                    disp.clear();
-
-                    disp.draw(Rect::new(Coord::new(35, 0), Coord::new(87, 52)).with_stroke(Some(PixelColorU8(1u8))).into_iter());
-
-                    if let Some(ip) = machine_ip::get() {
-                        let detected_ip = format!("http://{}", ip.to_string());
-                        // let detected_ip = String::from("http://192.168.1.1");
-                        println!("IP detected: {}", detected_ip);
-
-                        let code = QrCode::new(detected_ip).unwrap();
-                        
-                        let ip_qr = code.render::<char>()
-                            .quiet_zone(false)
-                            .module_dimensions(2, 2)
-                            .build();
-
-                        let mut y_point = 1;
-                        let mut x_point = 36;    
-
-                        for i in ip_qr.chars() {
-                            if i == '\n' {
-                                x_point = 36;
-                                y_point += 1;
-                            }
-
-                            if i == ' ' {
-                                // print!("{}", " ");
-                                disp.set_pixel(x_point, y_point, 1);
-                            }
-                            else {
-                                // print!("{}", i);
-                            }
-                            x_point += 1;
-                            
-                        }
-                        disp.flush().unwrap();
-
-                        // println!("{}", ip_qr);
-                    } else {
-                        disp.draw(
-                            Font12x16::render_str(&"NO IP".to_string()).translate(Coord::new(0, 0)).into_iter()    
-                        );
-                        disp.flush().unwrap();
-                    }
-                    */
-                },
-                _ => {
-                    println!("Display not initiated.");
-                }
-            }
-            */
         }
     
-        thread::sleep(Duration::from_secs(5));
+        thread::sleep(Duration::from_secs(10));
     }
 }
