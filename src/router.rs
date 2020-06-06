@@ -6,12 +6,14 @@ use rusqlite::{params, Connection};
 //use std::process;
 use crate::model::*;
 use std::{thread, time::Duration};
+use gpio_cdev::{LineHandle};
 
 pub fn route(
     topic: String, 
-    msg: String, 
+    msg: String,
     cli: &mqtt::AsyncClient, 
-    conn: Arc<Mutex<Connection>>
+    conn: Arc<Mutex<Connection>>,
+    relay_pin: Arc<Mutex<LineHandle>>
 ) {
     match topic.as_str() {
         "schedule/add" => {
@@ -52,23 +54,26 @@ pub fn route(
                 })
             }).unwrap();
 
-            for schedule in rows {
-                println!("{:?}", schedule.unwrap());
-            } 
+            let schedules: Vec<Schedule> = rows.into_iter().map(|schedule| schedule.unwrap()).collect();
+
+            let schedules_str = serde_json::to_string(&schedules).unwrap();
+            println!("{}", schedules_str);
+            let msg = mqtt::Message::new("schedule/res", schedules_str.as_str(), 0);
+            cli.publish(msg);
+            
         },
         "schedule/res" => {
         
         },
         "water/on" => {
             println!("Turning on!");
-            //thread::sleep(Duration::from_secs(2));
-            //println!("Watering kompliet!");
+            let relay_pin = relay_pin.lock().unwrap();
+            relay_pin.set_value(1).unwrap();
         },
         "water/off" => {
             println!("Turning off!");
-        },
-        "watering_time" => {
-            println!("Watering time topic");
+            let relay_pin = relay_pin.lock().unwrap();
+            relay_pin.set_value(0).unwrap()
         },
         "sensor/req" => {
             println!("Sensor req topic");
@@ -86,6 +91,4 @@ pub fn route(
             println!("Topic irrelevant");
         }
     }
-
-    // cli.disconnect(None).unwrap();
 }

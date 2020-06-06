@@ -12,7 +12,7 @@ use gpio_cdev::LineHandle;
 
 pub fn listen(
     conn: Arc<Mutex<Connection>>,
-    _relay_pin: Arc<Mutex<LineHandle>>
+    relay_pin: Arc<Mutex<LineHandle>>
 ) {
     fn on_connect_success(cli: &mqtt::AsyncClient, _msgid: u16) {
         println!("Connection succeeded");
@@ -57,13 +57,15 @@ pub fn listen(
             println!("{} - {}", topic, payload_str);
  
             let conn_clone = Arc::clone(&conn);
+            let relay_pin_clone = Arc::clone(&relay_pin);
 
             // let conn_clone = Arc::clone(&conn);
             router::route(
                 topic.to_string(), 
                 payload_str.to_string(), 
                 &cli, 
-                conn_clone
+                conn_clone,
+                relay_pin_clone
             );
         }
     });

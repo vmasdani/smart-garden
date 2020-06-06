@@ -5,6 +5,7 @@ pub fn fit(qr: String) -> Vec<Vec<u8>> {
 
     let mut qr_arr = vec![];
 
+    // Convert generated qrcode to 1s and 0s
     for line in split_qr {
         let line: Vec<u8> =
             line.chars().into_iter().map(|chr| {
@@ -19,6 +20,7 @@ pub fn fit(qr: String) -> Vec<Vec<u8>> {
 
     let mut perim = qr_arr.len();
 
+    // Generate image
     let mut img = ImageBuffer::from_fn(perim as u32, perim as u32, |x, y| {
         match qr_arr[x as usize][y as usize] {
             1 => Luma([0u8]),
@@ -27,8 +29,11 @@ pub fn fit(qr: String) -> Vec<Vec<u8>> {
     });
 
     let mut arr_final = vec![];
+     
+    // Resize to 62x62
     let img_resized = imageops::resize(&img, 62, 62, imageops::FilterType::Nearest);   
 
+    // Convert Luma to 1s and 0s
     for x in 0..62 {
         let mut x_row = vec![];
         

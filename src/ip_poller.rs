@@ -1,6 +1,6 @@
 use linux_embedded_hal::I2cdev;
 use embedded_graphics::{
-    fonts::{Font12x16, Text},
+    fonts::{Font12x16, Text, Font6x8, Font8x16},
     pixelcolor::BinaryColor,
     prelude::*,
     primitives::Rectangle,
@@ -27,6 +27,7 @@ pub fn poll_loop(
 
                     if let Some(ip) = machine_ip::get() {
                         let detected_ip = format!("http://{}", ip.to_string());
+                        // let detected_ip = "http://192.168.100.62".to_string();
                         println!("IP detected: {}", detected_ip);
 
                         let code = QrCode::new(detected_ip).unwrap();
@@ -57,7 +58,15 @@ pub fn poll_loop(
                                     .build()
                             )
                             .draw(disp);
-                        
+                         
+                        Text::new("192.168", Point::new(66, 0))
+                            .into_styled(TextStyle::new(Font8x16, BinaryColor::On))
+                            .draw(disp);
+
+                        Text::new("192.168", Point::new(66, 18))
+                            .into_styled(TextStyle::new(Font8x16, BinaryColor::On))
+                            .draw(disp);
+
                         disp.flush().unwrap();
                     } else {
                         disp.clear();
