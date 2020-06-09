@@ -59,12 +59,12 @@ Use your favorite text editor (nano, vim, etc.)
 
 	[Install]
 	WantedBy=multi-user.target
-	```
-	8. Run the systemd script
-	```sh
-	systemctl start smart-garden &&\
-	systemctl enable smart-garden
-	```
+```
+8. Run the systemd script
+```sh
+systemctl start smart-garden &&\
+systemctl enable smart-garden
+```
 
-	Congratulations, the smart garden IoT system is now active!
+Congratulations, the smart garden IoT system is now active!
 	

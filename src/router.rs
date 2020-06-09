@@ -7,6 +7,7 @@ use rusqlite::{params, Connection};
 use crate::model::*;
 use std::{thread, time::Duration};
 use gpio_cdev::{LineHandle};
+use std::process::Command; 
 
 pub fn route(
     topic: String, 
@@ -41,26 +42,40 @@ pub fn route(
             }
         },
         "schedule/req" => {
-            let conn = conn.lock().unwrap();
+            let schedules_str;
+            {
+                let conn = conn.lock().unwrap();
+                let mut stmt = conn.prepare("select * from schedule").unwrap();
+                let rows = stmt.query_map(params![], |row| {
+                    Ok(Schedule {
+                        id: row.get(0)?,
+                        hour: row.get(1)?,
+                        minute: row.get(2)?,
+                        watering_minute: row.get(3)?,
+                        watering_second: row.get(4)?
+                    })
+                }).unwrap();
+            
+                let schedules: Vec<Schedule> = rows.into_iter().map(|schedule| schedule.unwrap()).collect();
 
-            let mut stmt = conn.prepare("select * from schedule").unwrap();
-            let rows = stmt.query_map(params![], |row| {
-                Ok(Schedule {
-                    id: row.get(0)?,
-                    hour: row.get(1)?,
-                    minute: row.get(2)?,
-                    watering_minute: row.get(3)?,
-                    watering_second: row.get(4)?
-                })
-            }).unwrap();
-
-            let schedules: Vec<Schedule> = rows.into_iter().map(|schedule| schedule.unwrap()).collect();
-
-            let schedules_str = serde_json::to_string(&schedules).unwrap();
-            println!("{}", schedules_str);
+                schedules_str = serde_json::to_string(&schedules).unwrap();
+                println!("{}", schedules_str); 
+            }
+            
             let msg = mqtt::Message::new("schedule/res", schedules_str.as_str(), 0);
             cli.publish(msg);
             
+        },
+        "schedule/delete" => {
+            let id = msg.parse::<u32>().unwrap();
+
+            {
+                let conn = conn.lock().unwrap();
+                conn.execute("delete from schedule where id=?", params![id]);
+            }
+            
+            let msg = mqtt::Message::new("schedule/req", "1", 0);
+            cli.publish(msg);
         },
         "schedule/res" => {
         
@@ -86,6 +101,7 @@ pub fn route(
         },
         "poweroff" => {
             // TODO: power off machine
+            Command::new("poweroff").output();
         },
         _ => {
             println!("Topic irrelevant");
