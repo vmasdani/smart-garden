@@ -33,7 +33,7 @@ pub fn route(
                         id = conn.last_insert_rowid().to_string();
                     }
                     println!("Inserted id: {}", id);
-                    let msg = mqtt::Message::new("schedule/res", id, 0);
+                    let msg = mqtt::Message::new("schedule/req", "1", 0);
                     cli.publish(msg);
                 },
                 _ => {
